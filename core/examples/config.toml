@@ -1,0 +1,93 @@
+# NetPath example configuration
+
+[global]
+enabled = true
+fwmark_mask = 0xff00
+fwmark_offset = 0x100
+local_source = true
+log_level = "info"
+nft_table = "netpath"
+rtable_offset = 1000
+socket_path = "/var/run/netpath.sock"
+
+# WAN interfaces
+[interfaces.wan]
+enabled = true
+family = "ipv4"
+flush_conntrack = true
+ifname = "eth0"
+initial_state = "online"
+
+[interfaces.wan.track]
+count = 1
+down = 5
+interval = 10
+method = "ping"
+reliability = 1
+targets = ["8.8.8.8", "1.1.1.1"]
+timeout = 4
+up = 5
+
+[interfaces.wan2]
+enabled = true
+family = "ipv4"
+flush_conntrack = true
+ifname = "eth1"
+initial_state = "online"
+
+[interfaces.wan2.track]
+count = 1
+down = 5
+interval = 10
+method = "ping"
+reliability = 1
+targets = ["8.8.8.8", "1.1.1.1"]
+timeout = 4
+up = 5
+
+# Members (interface + weight + metric)
+[members.wan_m1_w1]
+interface = "wan"
+metric = 1
+weight = 1
+
+[members.wan2_m1_w1]
+interface = "wan2"
+metric = 1
+weight = 1
+
+# Policies
+[policies.balanced]
+last_resort = "unreachable"
+members = ["wan_m1_w1", "wan2_m1_w1"]
+mode = "balanced"
+sticky = false
+sticky_timeout = 600
+
+[policies.wan_only]
+last_resort = "unreachable"
+members = ["wan_m1_w1"]
+mode = "failover"
+
+# Traffic rules
+[[rules]]
+dest_port = "443"
+enabled = true
+name = "https"
+policy = "balanced"
+proto = "tcp"
+sticky = true
+
+[[rules]]
+dest_port = "80"
+enabled = true
+name = "http"
+policy = "balanced"
+proto = "tcp"
+sticky = true
+
+[[rules]]
+enabled = true
+name = "default"
+policy = "balanced"
+sticky = false

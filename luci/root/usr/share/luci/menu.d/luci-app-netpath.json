@@ -1,0 +1,73 @@
+{
+  "admin/network/netpath": {
+    "title": "NetPath",
+    "order": 65,
+    "action": {
+      "type": "firstchild"
+    }
+  },
+  "admin/network/netpath/overview": {
+    "title": "Overview",
+    "order": 10,
+    "action": {
+      "type": "view",
+      "path": "netpath/overview"
+    }
+  },
+  "admin/network/netpath/interface": {
+    "title": "Interfaces",
+    "order": 20,
+    "action": {
+      "type": "view",
+      "path": "netpath/interface"
+    }
+  },
+  "admin/network/netpath/member": {
+    "title": "Members",
+    "order": 30,
+    "action": {
+      "type": "view",
+      "path": "netpath/member"
+    }
+  },
+  "admin/network/netpath/policy": {
+    "title": "Policies",
+    "order": 40,
+    "action": {
+      "type": "view",
+      "path": "netpath/policy"
+    }
+  },
+  "admin/network/netpath/rule": {
+    "title": "Rules",
+    "order": 50,
+    "action": {
+      "type": "view",
+      "path": "netpath/rule"
+    }
+  },
+  "admin/network/netpath/globals": {
+    "title": "Globals",
+    "order": 60,
+    "action": {
+      "type": "view",
+      "path": "netpath/globals"
+    }
+  },
+  "admin/network/netpath/diagnostics": {
+    "title": "Diagnostics",
+    "order": 70,
+    "action": {
+      "type": "view",
+      "path": "netpath/diagnostics"
+    }
+  },
+  "admin/network/netpath/migrate": {
+    "title": "Migrate",
+    "order": 80,
+    "action": {
+      "type": "view",
+      "path": "netpath/migrate"
+    }
+  }
+}

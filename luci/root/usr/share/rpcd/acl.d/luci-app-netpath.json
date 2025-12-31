@@ -1,0 +1,109 @@
+{
+  "luci-app-netpath": {
+    "description": "Grant UCI access for luci-app-netpath",
+    "read": {
+      "file": {
+        "/etc/netpath*": [
+          "read"
+        ],
+        "/etc/config/netpath": [
+          "read"
+        ],
+        "/var/run/netpath*": [
+          "read"
+        ],
+        "/proc/net/*": [
+          "read"
+        ],
+        "/sys/class/net/*": [
+          "read"
+        ],
+        "/usr/bin/socat": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec",
+          "read",
+          "stat",
+          "list"
+        ],
+        "luci": [
+          "getInitList",
+          "getLocaltime",
+          "setInitAction"
+        ],
+        "uci": [
+          "get",
+          "state"
+        ],
+        "netpath": [
+          "status"
+        ]
+      },
+      "uci": [
+        "netpath"
+      ]
+    },
+    "write": {
+      "file": {
+        "/tmp/*": [
+          "write"
+        ],
+        "/usr/bin/socat": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec",
+          "write"
+        ]
+      },
+      "uci": [
+        "netpath"
+      ]
+    }
+  },
+  "luci-app-netpath-diag": {
+    "description": "Grant diagnostic access for luci-app-netpath",
+    "read": {
+      "cgi-io": [
+        "exec"
+      ],
+      "file": {
+        "/*": [
+          "exec",
+          "read",
+          "list",
+          "stat"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec",
+          "read",
+          "stat",
+          "list"
+        ]
+      }
+    },
+    "write": {
+      "cgi-io": [
+        "exec"
+      ],
+      "file": {
+        "/*": [
+          "exec"
+        ]
+      },
+      "ubus": {
+        "file": [
+          "exec",
+          "write"
+        ]
+      }
+    }
+  }
+}

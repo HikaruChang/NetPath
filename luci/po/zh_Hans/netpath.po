@@ -1,0 +1,647 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Project-Id-Version: luci-app-netpath\n"
+"Language: zh_Hans\n"
+
+msgid "NetPath"
+msgstr "NetPath 多线路管理"
+
+msgid "NetPath - Multi-WAN Manager"
+msgstr "NetPath - 多线路管理"
+
+msgid "NetPath is a multi-WAN load balancing and failover solution for OpenWrt."
+msgstr "NetPath 是 OpenWrt 的多线路负载均衡和故障转移解决方案。"
+
+msgid "Overview"
+msgstr "概览"
+
+msgid "Interfaces"
+msgstr "接口"
+
+msgid "Members"
+msgstr "成员"
+
+msgid "Policies"
+msgstr "策略"
+
+msgid "Rules"
+msgstr "规则"
+
+msgid "Globals"
+msgstr "全局设置"
+
+msgid "Advanced"
+msgstr "高级设置"
+
+msgid "Diagnostics"
+msgstr "诊断工具"
+
+msgid "Service Status"
+msgstr "服务状态"
+
+msgid "Status"
+msgstr "状态"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Stopped"
+msgstr "已停止"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"
+
+msgid "Name"
+msgstr "名称"
+
+msgid "Device"
+msgstr "设备"
+
+msgid "Interface"
+msgstr "接口"
+
+msgid "Interface Status"
+msgstr "接口状态"
+
+msgid "Track Method"
+msgstr "检测方式"
+
+msgid "Track Targets"
+msgstr "检测目标"
+
+msgid "No interfaces configured. Please add interfaces in the Interfaces tab."
+msgstr "未配置接口。请在接口选项卡中添加接口。"
+
+msgid "No interfaces configured"
+msgstr "未配置接口"
+
+msgid "Policy"
+msgstr "策略"
+
+msgid "Policy Overview"
+msgstr "策略概览"
+
+msgid "Mode"
+msgstr "模式"
+
+msgid "Last Resort"
+msgstr "最后手段"
+
+msgid "Action when all members are offline"
+msgstr "所有成员离线时的操作"
+
+msgid "No policies configured."
+msgstr "未配置策略。"
+
+msgid "Service Control"
+msgstr "服务控制"
+
+msgid "Start"
+msgstr "启动"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Restart"
+msgstr "重启"
+
+msgid "Reload"
+msgstr "重载"
+
+msgid "Restart Service"
+msgstr "重启服务"
+
+msgid "Reload Configuration"
+msgstr "重载配置"
+
+msgid "Starting..."
+msgstr "正在启动..."
+
+msgid "Stopping..."
+msgstr "正在停止..."
+
+msgid "Restarting..."
+msgstr "正在重启..."
+
+msgid "Reloading..."
+msgstr "正在重载..."
+
+msgid "Online"
+msgstr "在线"
+
+msgid "Offline"
+msgstr "离线"
+
+msgid "Configured Interfaces"
+msgstr "已配置接口"
+
+msgid "NetPath - Interfaces"
+msgstr "NetPath - 接口配置"
+
+msgid "Configure WAN interfaces for load balancing and failover."
+msgstr "配置用于负载均衡和故障转移的 WAN 接口。"
+
+msgid "Interface names must match those in /etc/config/network."
+msgstr "接口名称必须与 /etc/config/network 中的接口名称匹配。"
+
+msgid "Initial State"
+msgstr "初始状态"
+
+msgid "IP Family"
+msgstr "IP 协议族"
+
+msgid "Protocol"
+msgstr "协议"
+
+msgid "IPv4"
+msgstr "IPv4"
+
+msgid "IPv6"
+msgstr "IPv6"
+
+msgid "IPv4+IPv6"
+msgstr "IPv4+IPv6"
+
+msgid "Tracking IP"
+msgstr "检测目标 IP"
+
+msgid "Tracking Method"
+msgstr "检测方式"
+
+msgid "Ping (ICMP)"
+msgstr "Ping (ICMP)"
+
+msgid "Ping"
+msgstr "Ping"
+
+msgid "ARP Ping"
+msgstr "ARP Ping"
+
+msgid "HTTP Ping"
+msgstr "HTTP Ping"
+
+msgid "DNS Query"
+msgstr "DNS 查询"
+
+msgid "None (Always Online)"
+msgstr "无 (始终在线)"
+
+msgid "Reliability"
+msgstr "可靠性阈值"
+
+msgid "Number of targets that must respond for interface to be considered online"
+msgstr "接口被视为在线所需响应的目标数量"
+
+msgid "Ping Count"
+msgstr "Ping 次数"
+
+msgid "Timeout"
+msgstr "超时时间"
+
+msgid "Seconds"
+msgstr "秒"
+
+msgid "Ping Timeout"
+msgstr "Ping 超时"
+
+msgid "Ping Interval"
+msgstr "Ping 间隔"
+
+msgid "Check Interval"
+msgstr "检测间隔"
+
+msgid "Seconds between checks"
+msgstr "检测间隔秒数"
+
+msgid "Failure Interval"
+msgstr "故障检测间隔"
+
+msgid "Recovery Interval"
+msgstr "恢复检测间隔"
+
+msgid "Down Threshold"
+msgstr "离线阈值"
+
+msgid "Failures before marking interface offline"
+msgstr "标记接口离线前的失败次数"
+
+msgid "Up Threshold"
+msgstr "上线阈值"
+
+msgid "Successes before marking interface online"
+msgstr "标记接口在线前的成功次数"
+
+msgid "Flush Conntrack"
+msgstr "清除连接跟踪"
+
+msgid "Flush connection tracking on interface state change"
+msgstr "接口状态变化时清除连接跟踪"
+
+msgid "Metric"
+msgstr "度量值"
+
+msgid "NetPath - Members"
+msgstr "NetPath - 成员配置"
+
+msgid "Members are used to define interface properties within policies."
+msgstr "成员用于定义策略中的接口属性。"
+
+msgid "Weight"
+msgstr "权重"
+
+msgid "NetPath - Policies"
+msgstr "NetPath - 策略配置"
+
+msgid "Policies define how traffic is distributed across members."
+msgstr "策略定义流量如何在成员之间分配。"
+
+msgid "Load Balance"
+msgstr "负载均衡"
+
+msgid "Failover"
+msgstr "故障转移"
+
+msgid "Round Robin"
+msgstr "轮询"
+
+msgid "Random"
+msgstr "随机"
+
+msgid "Weighted"
+msgstr "加权"
+
+msgid "Source Hash"
+msgstr "源地址哈希"
+
+msgid "Sticky"
+msgstr "会话保持"
+
+msgid "Enable sticky connections for this policy"
+msgstr "为此策略启用会话保持"
+
+msgid "Enable sticky connections for this rule"
+msgstr "为此规则启用会话保持"
+
+msgid "Sticky Timeout"
+msgstr "会话保持超时"
+
+msgid "Timeout in seconds for sticky connections"
+msgstr "会话保持超时秒数"
+
+msgid "Unreachable"
+msgstr "不可达"
+
+msgid "Blackhole"
+msgstr "黑洞"
+
+msgid "Default Route"
+msgstr "默认路由"
+
+msgid "NetPath - Rules"
+msgstr "NetPath - 规则配置"
+
+msgid "Rules define which traffic uses which policy."
+msgstr "规则定义哪些流量使用哪个策略。"
+
+msgid "Rules are evaluated from top to bottom. First match wins."
+msgstr "规则从上到下依次匹配，首个匹配的规则生效。"
+
+msgid "Source IP"
+msgstr "源 IP"
+
+msgid "Source Port"
+msgstr "源端口"
+
+msgid "Dest IP"
+msgstr "目的 IP"
+
+msgid "Dest Port"
+msgstr "目的端口"
+
+msgid "All"
+msgstr "全部"
+
+msgid "IPSet"
+msgstr "IPSet 集合"
+
+msgid "Match traffic using this IPSet name"
+msgstr "使用此 IPSet 名称匹配流量"
+
+msgid "NetPath - Globals"
+msgstr "NetPath - 全局设置"
+
+msgid "NetPath - Advanced"
+msgstr "NetPath - 高级设置"
+
+msgid "Global settings for NetPath."
+msgstr "NetPath 全局设置。"
+
+msgid "Global Settings"
+msgstr "全局设置"
+
+msgid "Enable NetPath"
+msgstr "启用 NetPath"
+
+msgid "Routing Table Offset"
+msgstr "路由表偏移量"
+
+msgid "Starting number for custom routing tables"
+msgstr "自定义路由表的起始编号"
+
+msgid "Firewall Mark Offset"
+msgstr "防火墙标记偏移量"
+
+msgid "Offset for firewall marks (hex format)"
+msgstr "防火墙标记偏移量 (十六进制格式)"
+
+msgid "Firewall Mark Mask"
+msgstr "防火墙标记掩码"
+
+msgid "Mask for firewall marks (hex format)"
+msgstr "防火墙标记掩码 (十六进制格式)"
+
+msgid "NFTables Table Name"
+msgstr "NFTables 表名"
+
+msgid "Local Source Routing"
+msgstr "本地源路由"
+
+msgid "Enable routing for locally originated traffic"
+msgstr "为本地发起的流量启用路由"
+
+msgid "Enable IPv6"
+msgstr "启用 IPv6"
+
+msgid "Log Level"
+msgstr "日志级别"
+
+msgid "Debug"
+msgstr "调试"
+
+msgid "Trace"
+msgstr "跟踪"
+
+msgid "Info"
+msgstr "信息"
+
+msgid "Warning"
+msgstr "警告"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "IPC Socket Path"
+msgstr "IPC 套接字路径"
+
+msgid "Unix socket path for IPC communication"
+msgstr "用于 IPC 通信的 Unix 套接字路径"
+
+msgid "NetPath - Diagnostics"
+msgstr "NetPath - 诊断工具"
+
+msgid "Network diagnostic tools for troubleshooting WAN connections."
+msgstr "用于排查 WAN 连接问题的网络诊断工具。"
+
+msgid "Ping Test"
+msgstr "Ping 测试"
+
+msgid "Test connectivity to a remote host"
+msgstr "测试与远程主机的连通性"
+
+msgid "Connectivity Test"
+msgstr "连通性测试"
+
+msgid "Target"
+msgstr "目标"
+
+msgid "Target:"
+msgstr "目标："
+
+msgid "Count:"
+msgstr "次数："
+
+msgid "Traceroute"
+msgstr "路由追踪"
+
+msgid "Trace the route to a remote host"
+msgstr "追踪到远程主机的路由路径"
+
+msgid "DNS Lookup"
+msgstr "DNS 查询"
+
+msgid "Query DNS records for a domain"
+msgstr "查询域名的 DNS 记录"
+
+msgid "Domain:"
+msgstr "域名："
+
+msgid "Server (optional):"
+msgstr "服务器 (可选)："
+
+msgid "Lookup"
+msgstr "查询"
+
+msgid "Running ping test..."
+msgstr "正在执行 Ping 测试..."
+
+msgid "Running traceroute..."
+msgstr "正在执行路由追踪..."
+
+msgid "No output"
+msgstr "无输出"
+
+msgid "(No output)"
+msgstr "(无输出)"
+
+msgid "Error: "
+msgstr "错误："
+
+msgid "Executing..."
+msgstr "正在执行..."
+
+msgid "Click button to execute..."
+msgstr "点击按钮执行..."
+
+msgid "System Information"
+msgstr "系统信息"
+
+msgid "View current network configuration and routing information."
+msgstr "查看当前网络配置和路由信息。"
+
+msgid "Routing Tables"
+msgstr "路由表"
+
+msgid "NFTables Rules"
+msgstr "NFTables 规则"
+
+msgid "Firewall Rules"
+msgstr "防火墙规则"
+
+msgid "IP Rules"
+msgstr "IP 规则"
+
+msgid "IP Addresses"
+msgstr "IP 地址"
+
+msgid "NetPath Config"
+msgstr "NetPath 配置"
+
+msgid "Conntrack"
+msgstr "连接跟踪"
+
+msgid "Loading routing tables..."
+msgstr "正在加载路由表..."
+
+msgid "Loading nftables..."
+msgstr "正在加载 NFTables..."
+
+msgid "Loading IP rules..."
+msgstr "正在加载 IP 规则..."
+
+msgid "No routes"
+msgstr "无路由"
+
+msgid "No rules"
+msgstr "无规则"
+
+msgid "NetPath nftables not active"
+msgstr "NetPath NFTables 未激活"
+
+msgid "Output"
+msgstr "输出"
+
+msgid "Select a diagnostic command above..."
+msgstr "请在上方选择诊断命令..."
+
+msgid "Click a button above to view information..."
+msgstr "点击上方按钮查看信息..."
+
+msgid "NetPath Service Status"
+msgstr "NetPath 服务状态"
+
+msgid "Check Status"
+msgstr "检查状态"
+
+msgid "View Logs"
+msgstr "查看日志"
+
+msgid "Click a button above to check service status..."
+msgstr "点击上方按钮检查服务状态..."
+
+msgid "Migrate"
+msgstr "迁移"
+
+msgid "NetPath - Migrate from mwan3"
+msgstr "NetPath - 从 mwan3 迁移"
+
+msgid "Import your existing mwan3 configuration into NetPath for a seamless transition."
+msgstr "将现有的 mwan3 配置导入 NetPath，实现无缝迁移。"
+
+msgid "Migration Status"
+msgstr "迁移状态"
+
+msgid "mwan3 Configuration"
+msgstr "mwan3 配置"
+
+msgid "Found"
+msgstr "已找到"
+
+msgid "Not found"
+msgstr "未找到"
+
+msgid "No mwan3 Configuration Found"
+msgstr "未找到 mwan3 配置"
+
+msgid "The mwan3 configuration file (/etc/config/mwan3) was not found on this system."
+msgstr "在此系统上未找到 mwan3 配置文件 (/etc/config/mwan3)。"
+
+msgid "If you have mwan3 installed, please ensure it is properly configured before attempting migration."
+msgstr "如果您已安装 mwan3，请确保在尝试迁移之前已正确配置。"
+
+msgid "Configuration Preview"
+msgstr "配置预览"
+
+msgid "Click the button below to preview what will be migrated from mwan3."
+msgstr "点击下方按钮预览将从 mwan3 迁移的内容。"
+
+msgid "Load Preview"
+msgstr "加载预览"
+
+msgid "Loading preview..."
+msgstr "正在加载预览..."
+
+msgid "Migration Actions"
+msgstr "迁移操作"
+
+msgid "Important Notes"
+msgstr "重要提示"
+
+msgid "Your existing NetPath configuration will be backed up before migration."
+msgstr "迁移前将备份您现有的 NetPath 配置。"
+
+msgid "After migration, you should disable mwan3 to avoid conflicts."
+msgstr "迁移后，您应禁用 mwan3 以避免冲突。"
+
+msgid "Review the preview above before proceeding with migration."
+msgstr "在继续迁移之前，请查看上方的预览。"
+
+msgid "This operation cannot be automatically undone."
+msgstr "此操作无法自动撤销。"
+
+msgid "Start Migration"
+msgstr "开始迁移"
+
+msgid "Disable mwan3"
+msgstr "禁用 mwan3"
+
+msgid "Starting migration..."
+msgstr "正在开始迁移..."
+
+msgid "Migrating..."
+msgstr "正在迁移..."
+
+msgid "Migration completed!"
+msgstr "迁移完成！"
+
+msgid "Migration Complete"
+msgstr "迁移完成"
+
+msgid "Disabling mwan3..."
+msgstr "正在禁用 mwan3..."
+
+msgid "mwan3 disabled"
+msgstr "mwan3 已禁用"
+
+msgid "Enabling NetPath..."
+msgstr "正在启用 NetPath..."
+
+msgid "NetPath enabled"
+msgstr "NetPath 已启用"
+
+msgid "Post-Migration Checklist"
+msgstr "迁移后检查清单"
+
+msgid "Review the migrated configuration in each tab (Interfaces, Members, Policies, Rules)"
+msgstr "在各选项卡中查看迁移的配置（接口、成员、策略、规则）"
+
+msgid "Verify interface names match your network configuration"
+msgstr "验证接口名称与您的网络配置匹配"
+
+msgid "Test connectivity on each WAN interface"
+msgstr "测试每个 WAN 接口的连通性"
+
+msgid "Disable mwan3 service to prevent conflicts"
+msgstr "禁用 mwan3 服务以防止冲突"
+
+msgid "Enable and start NetPath service"
+msgstr "启用并启动 NetPath 服务"
+
+msgid "Monitor the Overview page to verify interfaces are online"
+msgstr "监控概览页面以验证接口是否在线"

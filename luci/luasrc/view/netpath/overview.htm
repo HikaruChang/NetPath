@@ -1,0 +1,82 @@
+<%-- Copyright (c) 2024-2026 Hikaru (i@rua.moe). All rights reserved. --%>
+  <%-- Non-commercial use only. Attribution required. --%>
+    <%+header%>
+      <h2 name="content">
+        <%:NetPath Overview%>
+      </h2>
+      <div class="cbi-map">
+        <fieldset class="cbi-section">
+          <legend>
+            <%:System Status%>
+          </legend>
+          <table width="100%" cellspacing="10">
+            <tr>
+              <td width="33%">
+                <%:Service Status%>
+              </td>
+              <td id="service-status"><em>
+                  <%:Loading...%>
+                </em></td>
+            </tr>
+            <tr>
+              <td width="33%">
+                <%:Active Interfaces%>
+              </td>
+              <td id="active-interfaces">-</td>
+            </tr>
+            <tr>
+              <td width="33%">
+                <%:Active Policies%>
+              </td>
+              <td id="active-policies">-</td>
+            </tr>
+          </table>
+        </fieldset>
+        <fieldset class="cbi-section">
+          <legend>
+            <%:Interface Status%>
+          </legend>
+          <table class="cbi-section-table" style="width:100%">
+            <thead>
+              <tr class="cbi-section-table-titles">
+                <th class="cbi-section-table-cell">
+                  <%:Interface%>
+                </th>
+                <th class="cbi-section-table-cell">
+                  <%:Status%>
+                </th>
+                <th class="cbi-section-table-cell">
+                  <%:IPv4 Address%>
+                </th>
+                <th class="cbi-section-table-cell">
+                  <%:Gateway%>
+                </th>
+                <th class="cbi-section-table-cell">
+                  <%:Metric%>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="interfaces-tbody">
+              <tr>
+                <td colspan="5" style="text-align:center"><em>
+                    <%:Loading...%>
+                  </em></td>
+              </tr>
+            </tbody>
+          </table>
+        </fieldset>
+        <fieldset class="cbi-section">
+          <input type="button" class="cbi-button cbi-button-apply" value="<%:Reload Configuration%>"
+            onclick="reloadConfig()" />
+          <input type="button" class="cbi-button cbi-button-reset" value="<%:Restart Service%>"
+            onclick="restartService()" />
+        </fieldset>
+      </div>
+      <script type="text/javascript">//<![CDATA[
+        function updateStatus() { XHR.get('<%=luci.dispatcher.build_url("admin","network","netpath","status")%>', null, function (x, d) { if (d && d.status === 'running') { document.getElementById('service-status').innerHTML = '<span style="color:green">&#x25cf; <%:Running%></span>'; document.getElementById('active-interfaces').textContent = (d.interfaces || 0) + ' / ' + (d.total_interfaces || 0); document.getElementById('active-policies').textContent = d.policies || 0; updateInterfaces(d.interface_list || []) } else { document.getElementById('service-status').innerHTML = '<span style="color:red">&#x25cf; <%:Stopped%></span>' } }) }
+        function updateInterfaces(ifaces) { var t = document.getElementById('interfaces-tbody'); if (!ifaces || ifaces.length === 0) { t.innerHTML = '<tr><td colspan="5" style="text-align:center"><em><%:No interfaces%></em></td></tr>'; return } var h = ''; ifaces.forEach(function (i) { var c = i.enabled ? 'green' : 'gray'; var s = i.enabled ? '<%:Enabled%>' : '<%:Disabled%>'; h += '<tr class="cbi-section-table-row"><td class="cbi-section-table-cell">' + i.name + '</td><td class="cbi-section-table-cell"><span style="color:' + c + '">&#x25cf; ' + s + '</span></td><td class="cbi-section-table-cell">' + (i.ipv4 || '-') + '</td><td class="cbi-section-table-cell">' + (i.gateway || '-') + '</td><td class="cbi-section-table-cell">' + (i.metric || '-') + '</td></tr>' }); t.innerHTML = h }
+        function reloadConfig() { if (confirm('<%:Reload configuration?%>')) XHR.post('<%=luci.dispatcher.build_url("admin","network","netpath","action")%>', { action: 'reload' }, function (x, d) { if (d && d.success) updateStatus() }) }
+        function restartService() { if (confirm('<%:Restart service?%>')) XHR.post('<%=luci.dispatcher.build_url("admin","network","netpath","action")%>', { action: 'restart' }, function (x, d) { if (d && d.success) setTimeout(updateStatus, 2000) }) }
+        setInterval(updateStatus, 5000); updateStatus();
+        //]]></script>
+      <%+footer%>

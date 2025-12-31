@@ -1,0 +1,463 @@
+#!/bin/sh
+# NetPath - mwan3 Configuration Migration Tool
+# Converts mwan3 configuration to NetPath format
+
+set -e
+
+ACTION="${1:-preview}"
+MWAN3_CONFIG="/etc/config/mwan3"
+NETPATH_CONFIG="/etc/config/netpath"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[OK]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check if mwan3 config exists
+check_mwan3() {
+    if [ ! -f "$MWAN3_CONFIG" ]; then
+        log_error "mwan3 configuration not found at $MWAN3_CONFIG"
+        exit 1
+    fi
+    log_success "Found mwan3 configuration"
+}
+
+# Get UCI value with default
+uci_get() {
+    local config="$1"
+    local section="$2"
+    local option="$3"
+    local default="$4"
+    local value
+    value=$(uci -q get "${config}.${section}.${option}" 2>/dev/null) || value="$default"
+    echo "$value"
+}
+
+# Get all sections of a type
+uci_get_sections() {
+    local config="$1"
+    local type="$2"
+    uci -q show "$config" 2>/dev/null | grep "=${type}$" | sed "s/.*\.\([^.]*\)=.*/\1/" | sort -u
+}
+
+# Preview migration
+preview_migration() {
+    echo "=============================================="
+    echo "  mwan3 to NetPath Migration Preview"
+    echo "=============================================="
+    echo ""
+
+    # Globals
+    echo "=== Global Settings ==="
+    local mmx_mask=$(uci_get mwan3 globals mmx_mask "0x3F00")
+    local rtmon_interval=$(uci_get mwan3 globals rtmon_interval "5")
+    echo "  mmx_mask: $mmx_mask -> fwmark_mask"
+    echo "  rtmon_interval: $rtmon_interval"
+    echo ""
+
+    # Interfaces
+    echo "=== Interfaces ==="
+    local iface_count=0
+    for iface in $(uci_get_sections mwan3 interface); do
+        iface_count=$((iface_count + 1))
+        local enabled=$(uci_get mwan3 "$iface" enabled "1")
+        local initial_state=$(uci_get mwan3 "$iface" initial_state "online")
+        local family=$(uci_get mwan3 "$iface" family "ipv4")
+        local track_method=$(uci_get mwan3 "$iface" track_method "ping")
+        local track_ip=$(uci_get mwan3 "$iface" track_ip "")
+        local reliability=$(uci_get mwan3 "$iface" reliability "1")
+        local count=$(uci_get mwan3 "$iface" count "1")
+        local timeout=$(uci_get mwan3 "$iface" timeout "4")
+        local interval=$(uci_get mwan3 "$iface" interval "10")
+        local down=$(uci_get mwan3 "$iface" down "5")
+        local up=$(uci_get mwan3 "$iface" up "5")
+        local flush=$(uci_get mwan3 "$iface" flush_conntrack "1")
+
+        echo "  [$iface]"
+        echo "    enabled: $enabled"
+        echo "    initial_state: $initial_state"
+        echo "    family: $family"
+        echo "    track_method: $track_method"
+        echo "    track_ip: $track_ip"
+        echo "    reliability: $reliability"
+        echo "    count: $count, timeout: $timeout, interval: $interval"
+        echo "    down: $down, up: $up"
+        echo "    flush_conntrack: $flush"
+        echo ""
+    done
+    echo "  Total: $iface_count interface(s)"
+    echo ""
+
+    # Members
+    echo "=== Members ==="
+    local member_count=0
+    for member in $(uci_get_sections mwan3 member); do
+        member_count=$((member_count + 1))
+        local interface=$(uci_get mwan3 "$member" interface "")
+        local metric=$(uci_get mwan3 "$member" metric "1")
+        local weight=$(uci_get mwan3 "$member" weight "1")
+
+        echo "  [$member]"
+        echo "    interface: $interface"
+        echo "    metric: $metric, weight: $weight"
+        echo ""
+    done
+    echo "  Total: $member_count member(s)"
+    echo ""
+
+    # Policies
+    echo "=== Policies ==="
+    local policy_count=0
+    for policy in $(uci_get_sections mwan3 policy); do
+        policy_count=$((policy_count + 1))
+        local use_member=$(uci_get mwan3 "$policy" use_member "")
+        local last_resort=$(uci_get mwan3 "$policy" last_resort "unreachable")
+
+        echo "  [$policy]"
+        echo "    members: $use_member"
+        echo "    last_resort: $last_resort"
+        echo ""
+    done
+    echo "  Total: $policy_count policy(s)"
+    echo ""
+
+    # Rules
+    echo "=== Rules ==="
+    local rule_count=0
+    for rule in $(uci_get_sections mwan3 rule); do
+        rule_count=$((rule_count + 1))
+        local enabled=$(uci_get mwan3 "$rule" enabled "1")
+        local src_ip=$(uci_get mwan3 "$rule" src_ip "")
+        local dest_ip=$(uci_get mwan3 "$rule" dest_ip "")
+        local src_port=$(uci_get mwan3 "$rule" src_port "")
+        local dest_port=$(uci_get mwan3 "$rule" dest_port "")
+        local proto=$(uci_get mwan3 "$rule" proto "all")
+        local sticky=$(uci_get mwan3 "$rule" sticky "0")
+        local use_policy=$(uci_get mwan3 "$rule" use_policy "")
+        local ipset=$(uci_get mwan3 "$rule" ipset "")
+
+        echo "  [$rule]"
+        echo "    enabled: $enabled"
+        [ -n "$src_ip" ] && echo "    src_ip: $src_ip"
+        [ -n "$dest_ip" ] && echo "    dest_ip: $dest_ip"
+        [ -n "$src_port" ] && echo "    src_port: $src_port"
+        [ -n "$dest_port" ] && echo "    dest_port: $dest_port"
+        echo "    proto: $proto"
+        echo "    policy: $use_policy"
+        [ "$sticky" = "1" ] && echo "    sticky: $sticky"
+        [ -n "$ipset" ] && echo "    ipset: $ipset"
+        echo ""
+    done
+    echo "  Total: $rule_count rule(s)"
+    echo ""
+
+    echo "=============================================="
+    echo "  Migration Summary"
+    echo "=============================================="
+    echo "  Interfaces: $iface_count"
+    echo "  Members: $member_count"
+    echo "  Policies: $policy_count"
+    echo "  Rules: $rule_count"
+    echo "=============================================="
+}
+
+# Perform migration
+do_migration() {
+    log_info "Starting migration from mwan3 to NetPath..."
+
+    # Backup existing netpath config if exists
+    if [ -f "$NETPATH_CONFIG" ]; then
+        local backup="${NETPATH_CONFIG}.bak.$(date +%Y%m%d%H%M%S)"
+        cp "$NETPATH_CONFIG" "$backup"
+        log_info "Backed up existing config to $backup"
+    fi
+
+    # Create new netpath config
+    log_info "Creating NetPath configuration..."
+
+    # Initialize config
+    cat > "$NETPATH_CONFIG" << 'EOF'
+config globals 'globals'
+	option enabled '1'
+	option rtable_offset '1000'
+	option fwmark_offset '0x100'
+	option nft_table 'netpath'
+	option log_level 'info'
+
+EOF
+
+    # Migrate globals
+    local mmx_mask=$(uci_get mwan3 globals mmx_mask "0x3F00")
+    sed -i "s/option fwmark_offset '0x100'/option fwmark_offset '0x100'\n\toption fwmark_mask '$mmx_mask'/" "$NETPATH_CONFIG"
+
+    # Migrate interfaces
+    log_info "Migrating interfaces..."
+    for iface in $(uci_get_sections mwan3 interface); do
+        local enabled=$(uci_get mwan3 "$iface" enabled "1")
+        local initial_state=$(uci_get mwan3 "$iface" initial_state "online")
+        local family=$(uci_get mwan3 "$iface" family "ipv4")
+        local track_method=$(uci_get mwan3 "$iface" track_method "ping")
+        local reliability=$(uci_get mwan3 "$iface" reliability "1")
+        local count=$(uci_get mwan3 "$iface" count "1")
+        local timeout=$(uci_get mwan3 "$iface" timeout "4")
+        local interval=$(uci_get mwan3 "$iface" interval "10")
+        local down=$(uci_get mwan3 "$iface" down "5")
+        local up=$(uci_get mwan3 "$iface" up "5")
+        local flush=$(uci_get mwan3 "$iface" flush_conntrack "1")
+
+        cat >> "$NETPATH_CONFIG" << EOF
+config interface '$iface'
+	option enabled '$enabled'
+	option ifname '$iface'
+	option initial_state '$initial_state'
+	option family '$family'
+	option track_method '$track_method'
+	option track_reliability '$reliability'
+	option track_count '$count'
+	option track_timeout '$timeout'
+	option track_interval '$interval'
+	option track_down '$down'
+	option track_up '$up'
+	option flush_conntrack '$flush'
+EOF
+
+        # Add track targets
+        for ip in $(uci_get mwan3 "$iface" track_ip ""); do
+            echo "	list track_targets '$ip'" >> "$NETPATH_CONFIG"
+        done
+
+        echo "" >> "$NETPATH_CONFIG"
+        log_success "  Migrated interface: $iface"
+    done
+
+    # Migrate members
+    log_info "Migrating members..."
+    for member in $(uci_get_sections mwan3 member); do
+        local interface=$(uci_get mwan3 "$member" interface "")
+        local metric=$(uci_get mwan3 "$member" metric "1")
+        local weight=$(uci_get mwan3 "$member" weight "1")
+
+        cat >> "$NETPATH_CONFIG" << EOF
+config member '$member'
+	option interface '$interface'
+	option metric '$metric'
+	option weight '$weight'
+
+EOF
+        log_success "  Migrated member: $member"
+    done
+
+    # Migrate policies
+    log_info "Migrating policies..."
+    for policy in $(uci_get_sections mwan3 policy); do
+        local last_resort=$(uci_get mwan3 "$policy" last_resort "unreachable")
+
+        cat >> "$NETPATH_CONFIG" << EOF
+config policy '$policy'
+	option mode 'balanced'
+	option last_resort '$last_resort'
+EOF
+
+        # Add members
+        for member in $(uci_get mwan3 "$policy" use_member ""); do
+            echo "	list members '$member'" >> "$NETPATH_CONFIG"
+        done
+
+        echo "" >> "$NETPATH_CONFIG"
+        log_success "  Migrated policy: $policy"
+    done
+
+    # Migrate rules
+    log_info "Migrating rules..."
+    for rule in $(uci_get_sections mwan3 rule); do
+        local enabled=$(uci_get mwan3 "$rule" enabled "1")
+        local src_ip=$(uci_get mwan3 "$rule" src_ip "")
+        local dest_ip=$(uci_get mwan3 "$rule" dest_ip "")
+        local src_port=$(uci_get mwan3 "$rule" src_port "")
+        local dest_port=$(uci_get mwan3 "$rule" dest_port "")
+        local proto=$(uci_get mwan3 "$rule" proto "all")
+        local sticky=$(uci_get mwan3 "$rule" sticky "0")
+        local timeout=$(uci_get mwan3 "$rule" timeout "600")
+        local use_policy=$(uci_get mwan3 "$rule" use_policy "")
+        local ipset=$(uci_get mwan3 "$rule" ipset "")
+
+        cat >> "$NETPATH_CONFIG" << EOF
+config rule '$rule'
+	option enabled '$enabled'
+	option proto '$proto'
+	option policy '$use_policy'
+	option sticky '$sticky'
+	option timeout '$timeout'
+EOF
+
+        [ -n "$src_ip" ] && echo "	option src_ip '$src_ip'" >> "$NETPATH_CONFIG"
+        [ -n "$dest_ip" ] && echo "	option dest_ip '$dest_ip'" >> "$NETPATH_CONFIG"
+        [ -n "$src_port" ] && echo "	option src_port '$src_port'" >> "$NETPATH_CONFIG"
+        [ -n "$dest_port" ] && echo "	option dest_port '$dest_port'" >> "$NETPATH_CONFIG"
+        [ -n "$ipset" ] && echo "	option ipset '$ipset'" >> "$NETPATH_CONFIG"
+
+        echo "" >> "$NETPATH_CONFIG"
+        log_success "  Migrated rule: $rule"
+    done
+
+    log_success "Migration completed successfully!"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Review the new configuration: cat $NETPATH_CONFIG"
+    echo "  2. Disable mwan3: /etc/init.d/mwan3 stop && /etc/init.d/mwan3 disable"
+    echo "  3. Enable NetPath: /etc/init.d/netpath enable && /etc/init.d/netpath start"
+}
+
+# Export as JSON for LuCI
+export_json() {
+    echo "{"
+    echo '  "globals": {'
+    local mmx_mask=$(uci_get mwan3 globals mmx_mask "0x3F00")
+    echo "    \"mmx_mask\": \"$mmx_mask\""
+    echo "  },"
+
+    # Interfaces
+    echo '  "interfaces": {'
+    local first_iface=1
+    for iface in $(uci_get_sections mwan3 interface); do
+        [ $first_iface -eq 0 ] && echo ","
+        first_iface=0
+        local enabled=$(uci_get mwan3 "$iface" enabled "1")
+        local initial_state=$(uci_get mwan3 "$iface" initial_state "online")
+        local family=$(uci_get mwan3 "$iface" family "ipv4")
+        local track_method=$(uci_get mwan3 "$iface" track_method "ping")
+        local track_ip=$(uci_get mwan3 "$iface" track_ip "" | tr '\n' ',' | sed 's/,$//')
+        local reliability=$(uci_get mwan3 "$iface" reliability "1")
+        local count=$(uci_get mwan3 "$iface" count "1")
+        local timeout=$(uci_get mwan3 "$iface" timeout "4")
+        local interval=$(uci_get mwan3 "$iface" interval "10")
+        local down=$(uci_get mwan3 "$iface" down "5")
+        local up=$(uci_get mwan3 "$iface" up "5")
+
+        printf '    "%s": {"enabled": "%s", "initial_state": "%s", "family": "%s", "track_method": "%s", "track_ip": "%s", "reliability": "%s", "count": "%s", "timeout": "%s", "interval": "%s", "down": "%s", "up": "%s"}' \
+            "$iface" "$enabled" "$initial_state" "$family" "$track_method" "$track_ip" "$reliability" "$count" "$timeout" "$interval" "$down" "$up"
+    done
+    echo ""
+    echo "  },"
+
+    # Members
+    echo '  "members": {'
+    local first_member=1
+    for member in $(uci_get_sections mwan3 member); do
+        [ $first_member -eq 0 ] && echo ","
+        first_member=0
+        local interface=$(uci_get mwan3 "$member" interface "")
+        local metric=$(uci_get mwan3 "$member" metric "1")
+        local weight=$(uci_get mwan3 "$member" weight "1")
+
+        printf '    "%s": {"interface": "%s", "metric": "%s", "weight": "%s"}' \
+            "$member" "$interface" "$metric" "$weight"
+    done
+    echo ""
+    echo "  },"
+
+    # Policies
+    echo '  "policies": {'
+    local first_policy=1
+    for policy in $(uci_get_sections mwan3 policy); do
+        [ $first_policy -eq 0 ] && echo ","
+        first_policy=0
+        local use_member=$(uci_get mwan3 "$policy" use_member "" | tr '\n' ',' | sed 's/,$//')
+        local last_resort=$(uci_get mwan3 "$policy" last_resort "unreachable")
+
+        printf '    "%s": {"members": "%s", "last_resort": "%s"}' \
+            "$policy" "$use_member" "$last_resort"
+    done
+    echo ""
+    echo "  },"
+
+    # Rules
+    echo '  "rules": {'
+    local first_rule=1
+    for rule in $(uci_get_sections mwan3 rule); do
+        [ $first_rule -eq 0 ] && echo ","
+        first_rule=0
+        local enabled=$(uci_get mwan3 "$rule" enabled "1")
+        local src_ip=$(uci_get mwan3 "$rule" src_ip "")
+        local dest_ip=$(uci_get mwan3 "$rule" dest_ip "")
+        local proto=$(uci_get mwan3 "$rule" proto "all")
+        local use_policy=$(uci_get mwan3 "$rule" use_policy "")
+
+        printf '    "%s": {"enabled": "%s", "src_ip": "%s", "dest_ip": "%s", "proto": "%s", "policy": "%s"}' \
+            "$rule" "$enabled" "$src_ip" "$dest_ip" "$proto" "$use_policy"
+    done
+    echo ""
+    echo "  },"
+
+    # Summary
+    local iface_count=$(uci_get_sections mwan3 interface | wc -l)
+    local member_count=$(uci_get_sections mwan3 member | wc -l)
+    local policy_count=$(uci_get_sections mwan3 policy | wc -l)
+    local rule_count=$(uci_get_sections mwan3 rule | wc -l)
+
+    echo '  "summary": {'
+    echo "    \"interfaces\": $iface_count,"
+    echo "    \"members\": $member_count,"
+    echo "    \"policies\": $policy_count,"
+    echo "    \"rules\": $rule_count"
+    echo "  }"
+    echo "}"
+}
+
+# Check for mwan3 existence
+check_exists() {
+    if [ -f "$MWAN3_CONFIG" ]; then
+        echo '{"exists": true}'
+    else
+        echo '{"exists": false}'
+    fi
+}
+
+# Main
+case "$ACTION" in
+    preview)
+        check_mwan3
+        preview_migration
+        ;;
+    migrate)
+        check_mwan3
+        do_migration
+        ;;
+    json)
+        if [ -f "$MWAN3_CONFIG" ]; then
+            export_json
+        else
+            echo '{"error": "mwan3 configuration not found"}'
+        fi
+        ;;
+    check)
+        check_exists
+        ;;
+    *)
+        echo "Usage: $0 {preview|migrate|json|check}"
+        echo ""
+        echo "  preview  - Show what will be migrated (dry run)"
+        echo "  migrate  - Perform the actual migration"
+        echo "  json     - Export mwan3 config as JSON"
+        echo "  check    - Check if mwan3 config exists"
+        exit 1
+        ;;
+esac

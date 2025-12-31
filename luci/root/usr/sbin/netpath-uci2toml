@@ -1,0 +1,186 @@
+#!/bin/sh
+# Convert NetPath UCI configuration to TOML format
+# This script reads /etc/config/netpath and generates /etc/netpath/config.toml
+
+UCI_CONFIG="/etc/config/netpath"
+TOML_DIR="/etc/netpath"
+TOML_CONFIG="$TOML_DIR/config.toml"
+
+if [ ! -f "$UCI_CONFIG" ]; then
+    echo "Error: UCI config not found at $UCI_CONFIG"
+    exit 1
+fi
+
+mkdir -p "$TOML_DIR"
+
+# Helper function to get UCI value
+uci_get() {
+    uci -q get "netpath.$1.$2" 2>/dev/null || echo "$3"
+}
+
+# Helper function to get UCI list
+uci_get_list() {
+    uci -q get "netpath.$1.$2" 2>/dev/null | tr ' ' '\n' | sed '/^$/d'
+}
+
+# Get all sections of a type
+uci_get_sections() {
+    uci -q show netpath 2>/dev/null | grep "=\$1$" | sed 's/netpath\.\([^=]*\)=.*/\1/' | grep -v '@'
+}
+
+# Start writing TOML
+{
+echo "# NetPath Configuration (auto-generated from UCI)"
+echo "# Generated: $(date)"
+echo ""
+
+# Global settings
+echo "[global]"
+echo "enabled = $([ "$(uci_get globals enabled 1)" = "1" ] && echo "true" || echo "false")"
+echo "nft_table = \"$(uci_get globals nft_table netpath)\""
+echo "rtable_offset = $(uci_get globals rtable_offset 1000)"
+
+fwmark_offset=$(uci_get globals fwmark_offset 0x100)
+# Convert hex to decimal for TOML
+if echo "$fwmark_offset" | grep -q "^0x"; then
+    fwmark_offset=$(printf "%d" "$fwmark_offset")
+fi
+echo "fwmark_offset = $fwmark_offset"
+
+fwmark_mask=$(uci_get globals fwmark_mask 0xff00)
+# Convert hex to decimal for TOML
+if echo "$fwmark_mask" | grep -q "^0x"; then
+    fwmark_mask=$(printf "%d" "$fwmark_mask")
+fi
+echo "fwmark_mask = $fwmark_mask"
+
+echo "local_source = $([ "$(uci_get globals local_source 1)" = "1" ] && echo "true" || echo "false")"
+echo "log_level = \"$(uci_get globals log_level info)\""
+echo "socket_path = \"$(uci_get globals socket_path /var/run/netpath.sock)\""
+echo ""
+
+# Interfaces
+echo "[interfaces]"
+for iface in $(uci show netpath 2>/dev/null | grep '=interface$' | sed 's/netpath\.\([^=]*\)=.*/\1/'); do
+    echo ""
+    echo "[interfaces.$iface]"
+    echo "ifname = \"$(uci_get $iface ifname $iface)\""
+    echo "enabled = $([ "$(uci_get $iface enabled 1)" = "1" ] && echo "true" || echo "false")"
+    echo "initial_state = \"$(uci_get $iface initial_state online)\""
+    echo "family = \"$(uci_get $iface family ipv4)\""
+    echo "flush_conntrack = $([ "$(uci_get $iface flush_conntrack 1)" = "1" ] && echo "true" || echo "false")"
+    echo ""
+    echo "[interfaces.$iface.track]"
+    echo "method = \"$(uci_get $iface track_method ping)\""
+    
+    # Track targets as array
+    targets=$(uci_get $iface track_targets "")
+    if [ -n "$targets" ]; then
+        echo -n "targets = ["
+        first=1
+        for t in $targets; do
+            [ $first -eq 0 ] && echo -n ", "
+            echo -n "\"$t\""
+            first=0
+        done
+        echo "]"
+    else
+        echo "targets = []"
+    fi
+    
+    echo "reliability = $(uci_get $iface track_reliability 1)"
+    echo "count = $(uci_get $iface track_count 1)"
+    echo "timeout = $(uci_get $iface track_timeout 4)"
+    echo "interval = $(uci_get $iface track_interval 10)"
+    echo "down = $(uci_get $iface track_down 5)"
+    echo "up = $(uci_get $iface track_up 5)"
+done
+
+echo ""
+
+# Members
+echo "[members]"
+for member in $(uci show netpath 2>/dev/null | grep '=member$' | sed 's/netpath\.\([^=]*\)=.*/\1/'); do
+    echo ""
+    echo "[members.$member]"
+    echo "interface = \"$(uci_get $member interface)\""
+    echo "metric = $(uci_get $member metric 1)"
+    echo "weight = $(uci_get $member weight 1)"
+done
+
+echo ""
+
+# Policies
+echo "[policies]"
+for policy in $(uci show netpath 2>/dev/null | grep '=policy$' | sed 's/netpath\.\([^=]*\)=.*/\1/'); do
+    echo ""
+    echo "[policies.$policy]"
+    
+    # Members as array
+    members=$(uci_get $policy members "")
+    if [ -n "$members" ]; then
+        echo -n "members = ["
+        first=1
+        for m in $members; do
+            [ $first -eq 0 ] && echo -n ", "
+            echo -n "\"$m\""
+            first=0
+        done
+        echo "]"
+    else
+        echo "members = []"
+    fi
+    
+    mode=$(uci_get $policy mode balanced)
+    # Mode is lowercase in serde
+    echo "mode = \"$mode\""
+    
+    echo "sticky = $([ "$(uci_get $policy sticky 0)" = "1" ] && echo "true" || echo "false")"
+    echo "sticky_timeout = $(uci_get $policy sticky_timeout 600)"
+    
+    last_resort=$(uci_get $policy last_resort unreachable)
+    # last_resort is lowercase in serde
+    echo "last_resort = \"$last_resort\""
+done
+
+echo ""
+
+# Rules
+echo "[[rules]]"
+first_rule=1
+for rule in $(uci show netpath 2>/dev/null | grep '=rule$' | sed 's/netpath\.\([^=]*\)=.*/\1/'); do
+    [ $first_rule -eq 0 ] && echo -e "\n[[rules]]"
+    first_rule=0
+    
+    echo "name = \"$rule\""
+    echo "enabled = $([ "$(uci_get $rule enabled 1)" = "1" ] && echo "true" || echo "false")"
+    
+    src_ip=$(uci_get $rule src_ip "")
+    [ -n "$src_ip" ] && echo "src_ip = \"$src_ip\""
+    
+    dest_ip=$(uci_get $rule dest_ip "")
+    [ -n "$dest_ip" ] && echo "dest_ip = \"$dest_ip\""
+    
+    src_port=$(uci_get $rule src_port "")
+    [ -n "$src_port" ] && echo "src_port = \"$src_port\""
+    
+    dest_port=$(uci_get $rule dest_port "")
+    [ -n "$dest_port" ] && echo "dest_port = \"$dest_port\""
+    
+    proto=$(uci_get $rule proto "")
+    [ -n "$proto" ] && echo "proto = \"$proto\""
+    
+    echo "policy = \"$(uci_get $rule policy)\""
+    echo "sticky = $([ "$(uci_get $rule sticky 0)" = "1" ] && echo "true" || echo "false")"
+    
+    ipset=$(uci_get $rule ipset "")
+    [ -n "$ipset" ] && echo "ipset = \"$ipset\""
+    
+    timeout=$(uci_get $rule timeout "")
+    [ -n "$timeout" ] && echo "timeout = $timeout"
+done
+
+} > "$TOML_CONFIG"
+
+echo "Configuration converted successfully!"
+echo "Output: $TOML_CONFIG"

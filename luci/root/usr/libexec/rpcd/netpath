@@ -1,0 +1,14 @@
+#!/bin/sh
+
+case "$1" in
+	list)
+		echo '{ "status": { } }'
+		;;
+	call)
+		case "$2" in
+			status)
+				echo '{"cmd":"status"}' | /usr/bin/socat - UNIX-CONNECT:/var/run/netpath.sock
+				;;
+		esac
+		;;
+esac

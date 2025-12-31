@@ -1,0 +1,39 @@
+# Ignore build artifacts
+**/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo
+Cargo.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+/build/
+/build-apk/
+/bin/
+*.o
+*.so
+*.a
+*.apk
+*.tar.gz
+*.tar
+
+# OpenWrt
+*.ipk
+/tmp/
+
+# Docker
+.docker-cache/
+
+# Build scripts generated files
+core/files/

@@ -1,0 +1,49 @@
+<%-- Copyright (c) 2024-2026 Hikaru (i@rua.moe). All rights reserved. --%>
+  <%-- Non-commercial use only. Attribution required. --%>
+    <%+header%>
+      <h2 name="content">
+        <%:Diagnostics%>
+      </h2>
+      <div class="cbi-map">
+        <fieldset class="cbi-section">
+          <legend>
+            <%:Interface Diagnostics%>
+          </legend>
+          <div class="cbi-section-node">
+            <label>
+              <%:Select Interface:%>
+            </label>
+            <select id="diag-interface" class="cbi-input-select">
+              <option value="">
+                <%:Loading...%>
+              </option>
+            </select>
+            <input type="button" class="cbi-button cbi-button-apply" value="<%:Ping Test%>" onclick="runPing()" />
+            <input type="button" class="cbi-button cbi-button-apply" value="<%:Traceroute%>"
+              onclick="runTraceroute()" />
+          </div>
+          <div class="cbi-section-node">
+            <pre id="diag-output" style="background:#f5f5f5;padding:10px;min-height:200px;overflow:auto"></pre>
+          </div>
+        </fieldset>
+        <fieldset class="cbi-section">
+          <legend>
+            <%:Routing Information%>
+          </legend>
+          <div class="cbi-section-node">
+            <input type="button" class="cbi-button cbi-button-apply" value="<%:Show Routing Tables%>"
+              onclick="showRoutes()" />
+            <input type="button" class="cbi-button cbi-button-apply" value="<%:Show NFTables Rules%>"
+              onclick="showNFT()" />
+          </div>
+        </fieldset>
+      </div>
+      <script type="text/javascript">//<![CDATA[
+        function loadInterfaces() { XHR.get('<%=luci.dispatcher.build_url("admin","network","netpath","status")%>', null, function (x, d) { if (d && d.interface_list) { var sel = document.getElementById('diag-interface'); sel.innerHTML = ''; d.interface_list.forEach(function (i) { sel.innerHTML += '<option value="' + i.name + '">' + i.name + '</option>' }) } }) }
+        function runPing() { var iface = document.getElementById('diag-interface').value; if (!iface) return; document.getElementById('diag-output').textContent = 'Running ping test...'; XHR.post('<%=luci.dispatcher.build_url("admin","network","netpath","diag")%>', { cmd: 'ping', interface: iface }, function (x, d) { document.getElementById('diag-output').textContent = d.output || 'No output' }) }
+        function runTraceroute() { var iface = document.getElementById('diag-interface').value; if (!iface) return; document.getElementById('diag-output').textContent = 'Running traceroute...'; XHR.post('<%=luci.dispatcher.build_url("admin","network","netpath","diag")%>', { cmd: 'traceroute', interface: iface }, function (x, d) { document.getElementById('diag-output').textContent = d.output || 'No output' }) }
+        function showRoutes() { document.getElementById('diag-output').textContent = 'Loading routing tables...'; XHR.post('<%=luci.dispatcher.build_url("admin","network","netpath","diag")%>', { cmd: 'routes' }, function (x, d) { document.getElementById('diag-output').textContent = d.output || 'No output' }) }
+        function showNFT() { document.getElementById('diag-output').textContent = 'Loading nftables rules...'; XHR.post('<%=luci.dispatcher.build_url("admin","network","netpath","diag")%>', { cmd: 'nft' }, function (x, d) { document.getElementById('diag-output').textContent = d.output || 'No output' }) }
+        loadInterfaces();
+        //]]></script>
+      <%+footer%>
